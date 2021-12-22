@@ -3,6 +3,7 @@ const app = express();
 const cors = require('cors');
 const port = process.env.PORT || 5000;
 const { MongoClient } = require('mongodb');
+const ObjectId = require('mongodb').ObjectId;
 
 require('dotenv').config();
 
@@ -25,6 +26,7 @@ async function run() {
         client.connect();
         const database = client.db('language-center');
         const courseCollection = database.collection('courses');
+        const orderCollection = database.collection('orders');
 
         // Get Courses api
         app.get('/courses', async(req,res) =>{
@@ -33,7 +35,22 @@ async function run() {
             res.send(courses);
 
         })
-        console.log("Connected Successfully");
+        app.get('/courses/:id', async(req,res) =>{
+            const id = req.params.id;
+            const query = {_id: ObjectId(id)};
+            const course = await courseCollection.findOne(query);
+            res.json(course);
+
+        })
+
+        app.post('/orders', async(req,res) =>{
+            const order = req.body;
+
+            const result = await orderCollection.insertOne(order);
+            console.log(result);
+            res.json(result);
+            console.log('hit api');
+    })
     }
     finally{
         // await client.close();
